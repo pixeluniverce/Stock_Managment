@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Stock Book</title>
+<style>
+:root{--bg:#f1efec;--sf:#fff;--tx:#232120;--mu:#6b6560;--ln:#dcd7d1;--ac:#a63d2a;--ac2:#fff;--ok:#2f6b4f;--wn:#b4551c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a19;--sf:#2a2726;--tx:#efebe6;--mu:#a29a92;--ln:#413d3a;--ac:#e0735e;--ac2:#1c1a19;--ok:#6cc39a;--wn:#f0a064}}
+:root[data-theme="dark"]{--bg:#1c1a19;--sf:#2a2726;--tx:#efebe6;--mu:#a29a92;--ln:#413d3a;--ac:#e0735e;--ac2:#1c1a19;--ok:#6cc39a;--wn:#f0a064}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 16px/1.45 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.w{max-width:720px;margin:0 auto;padding:16px 14px 90px}
+h1{font-size:26px;margin:4px 0 2px;font-weight:700}
+.sub{color:var(--mu);font-size:14px;margin:0 0 14px}
+.sum{display:flex;gap:10px;margin-bottom:12px}
+.sum div{flex:1;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:8px 10px}
+.sum b{display:block;font-size:22px}.sum span{font-size:13px;color:var(--mu)}
+.bar{display:flex;gap:8px;margin-bottom:10px}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:10px;width:100%}
+button{font:inherit;font-weight:600;border:1px solid var(--ln);background:var(--sf);color:var(--tx);border-radius:8px;padding:9px 12px;cursor:pointer}
+button.p{background:var(--ac);color:var(--ac2);border-color:var(--ac)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.tabs{display:flex;gap:6px;margin:10px 0}.tabs button{flex:1}.tabs .on{background:var(--tx);color:var(--bg)}
+.row{display:flex;align-items:center;gap:10px;background:var(--sf);border:1px solid var(--ln);border-left:5px solid var(--ok);border-radius:8px;padding:9px 12px;margin-bottom:6px;cursor:pointer}
+.row.low{border-left-color:var(--wn)}.row.zero{border-left-color:var(--ln)}
+.row .n{flex:1;min-width:0}.row .n b{display:block;overflow-wrap:anywhere}.row .n small{color:var(--mu)}
+.q{font-size:22px;font-weight:700;text-align:right}.q small{display:block;font-size:12px;font-weight:400;color:var(--mu)}
+.tx{display:flex;justify-content:space-between;gap:8px;padding:8px 2px;border-bottom:1px solid var(--ln);font-size:15px}
+.in{color:var(--ok);font-weight:700}.out{color:var(--wn);font-weight:700}
+.mod{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.mod.on{display:flex}.sh{background:var(--bg);width:100%;max-width:720px;max-height:92%;overflow:auto;border-radius:16px 16px 0 0;padding:16px 14px calc(18px + env(safe-area-inset-bottom,0px))}
+.sh label{display:block;font-size:14px;color:var(--mu);margin:10px 0 3px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 2px 8px rgba(0,0,0,.3);padding:12px 18px;border-radius:24px}
+.empty{text-align:center;color:var(--mu);padding:30px 10px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:80px;background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:20px;display:none;z-index:30;font-size:14px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}.tools button{flex:1 1 30%}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:12px;margin-bottom:12px}.card h3{margin:0 0 8px;font-size:17px}.card p{margin:0 0 8px;color:var(--mu);font-size:14px}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:5px}
+.br{border:0;border-radius:5px;padding:7px 3px;font-size:19px;font-weight:700;line-height:1.1;background:var(--ok);color:var(--bg)}
+.br small{display:block;font-size:10.5px;font-weight:400;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.br.low{background:var(--wn)}.br.zero{background:var(--ln);color:var(--mu)}.br.neg{background:var(--ac)}
+.lg{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--mu);margin-top:8px}.lg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.tp{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px}.tp span{width:42%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.tp div{height:14px;border-radius:3px;background:var(--wn)}.tp b{font-size:14px}
+.row.neg{border-left-color:var(--ac)}.q.neg{color:var(--ac)}
+.ch{display:flex;align-items:center;justify-content:space-between}.ch h3{margin:0}.ch button{width:40px}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}.cg em{font-style:normal;font-size:12px;color:var(--mu);text-align:center}
+.cd{padding:4px 1px;min-height:52px;display:flex;flex-direction:column;align-items:center;font-size:11px;line-height:1.15;border-radius:6px}
+.cd b{font-size:14px}.cd.td{border:2px solid var(--ac)}.cd.has{background:var(--bg)}.cd i{font-style:normal;font-weight:600}
+.ctip{margin-top:10px;padding:9px 11px;border-radius:8px;background:var(--bg);font-size:14px}.ctip div{font-size:13px;color:var(--mu)}
+button{touch-action:manipulation;min-height:40px}
+@media(max-width:380px){.cd i{font-size:10px}.cd b{font-size:13px}.sum b{font-size:19px}h1{font-size:23px}}
+@media(min-width:760px){.w{max-width:1080px;padding:22px 22px 90px}#list.gr{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:0 10px}.mod{align-items:center}.sh{border-radius:16px;max-width:520px}.cd{min-height:62px;font-size:12px}}
+@media(min-width:900px){#dash{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}}
+.card label{display:block;font-size:14px;color:var(--mu);margin:8px 0 3px}.tabs button{padding:9px 2px;font-size:14px}
+</style></head><body><div class="w">
+<h1>My Stock Book</h1><p class="sub" id="bk"></p><p class="sub" id="sy" style="margin-top:-10px"></p>
+<div class="sum"><div><b id="s1">0</b><span>Products</span></div><div><b id="s2">0</b><span>Low or empty</span></div><div><b id="s3">0</b><span>Stock value (buy)</span></div></div>
+<div class="tabs"><button id="td" class="on">Dashboard</button><button id="ts">Stock</button><button id="th">History</button><button id="tp">Parties</button></div>
+<div id="dash"></div><div class="bar" id="bar"><input id="q" type="search" placeholder="Search name or code"><select id="fl" style="width:auto"><option value="">All</option><option value="low">Low or empty</option></select></div>
+<div id="list"></div>
+<div class="tools"><button id="bImp">Import CSV</button><button id="bExp">Export CSV</button><button id="bBk">Back up</button><button id="bRs">Restore</button><button id="bTx">Export history</button></div>
+<input type="file" id="fi" hidden><button class="p fab" id="add">+ Add new item</button>
+</div><div class="mod" id="m"><div class="sh" id="sh"></div></div><div id="toast"></div>
+<script>
+const SEED=``;
+const TXSEED=``;
+const K='stockbook-v2';let D={p:[],t:[],bk:null};
+const $=i=>document.getElementById(i);
+function idb(fn){try{const r=indexedDB.open('stockbook',1);r.onupgradeneeded=()=>r.result.createObjectStore('s');r.onsuccess=()=>fn(r.result)}catch(e){}}
+function save(){calc();clearTimeout(wq);wq=setTimeout(run,700);const j=JSON.stringify(D);try{localStorage.setItem(K,j)}catch(e){}idb(db=>{try{db.transaction('s','readwrite').objectStore('s').put(j,'d')}catch(e){}})}
+function load(){try{const r=localStorage.getItem(K)||localStorage.getItem('stockbook-v1');if(r)D=JSON.parse(r)}catch(e){}}
+function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';setTimeout(()=>t.style.display='none',2500)}
+const num=v=>{const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isNaN(n)?0:n};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let SM={},DT={};function calc(){SM={};DT={};for(const x of D.t){SM[x.pid]=(SM[x.pid]||0)+(x.type==='in'?x.qty:-x.qty);const d=DT[x.date]||(DT[x.date]={i:0,o:0});d[x.type==='in'?'i':'o']+=x.qty}}
+function stock(pid){return SM[pid]||0}
+function ld(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function today(){return ld(new Date())}
+// tolerant parser for the old app's product export (names/notes may hold commas and quotes)
+function parseProducts(txt){const L=txt.replace(/^\ufeff/,'').split(/\r?\n/).filter(l=>l.trim());L.shift();const out=[];
+for(const l of L){const a=l.indexOf(','),z=l.lastIndexOf(',');if(a<0||z===a)continue;const pid=l.slice(0,a).trim(),rate=num(l.slice(z+1)),mid=l.slice(a+1,z),b=mid.indexOf(',');
+out.push({pid,name:(b<0?mid:mid.slice(0,b)).trim(),note:b<0?'':mid.slice(b+1).trim(),buy:rate,sell:0,min:0})}return out}
+function splitCsv(l){const r=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(q){if(ch==='"'&&l[i+1]==='"'){c+='"';i++}else if(ch==='"')q=false;else c+=ch}else if(ch==='"')q=true;else if(ch===','){r.push(c);c=''}else c+=ch}r.push(c);return r}
+function cells(l,n){const c=splitCsv(l);if(c.length===n)return c;return l.split(',')}
+let SKIP=0;
+function importTx(txt){SKIP=0;const L=txt.replace(/^\ufeff/,'').split(/\r?\n/).filter(l=>l.trim());const hd=L.shift(),h=splitCsv(hd).map(x=>x.trim().toLowerCase()),N=h.length;
+const f=(...k)=>h.findIndex(x=>k.some(y=>x.includes(y)));const ip=f('pid','product','code'),it=f('type','in/out','status'),iq=f('qty','quantity'),id=f('date'),inn=f('note','remark','desc'),ipt=f('party','customer');
+if(ip<0||iq<0)return -1;const nm={},pd={};D.p.forEach(p=>{nm[p.name.trim().toLowerCase()]=p.pid;pd[p.pid.toLowerCase()]=p.pid});let n=0;
+for(const l of L){const c=cells(l,N),raw=(c[ip]||'').trim().toLowerCase(),pid=pd[raw]||nm[raw];if(!pid){SKIP++;continue}let ty=(c[it]||'in').toLowerCase().includes('out')?'out':'in',qty=num(c[iq]);if(qty<0){qty=-qty;ty='out'}
+D.t.push({id:Date.now()+Math.random(),date:(c[id]||today()).trim(),pid,type:ty,qty,note:(c[inn]||'').trim(),party:ipt>=0?(c[ipt]||'').trim():''});n++}return n}
+let TAB='d',tm=0;
+function setTab(t){TAB=t;['d','s','h','p'].forEach(k=>$('t'+k).classList.toggle('on',k===t));render()}
+function status(p){const s=stock(p.pid);return s<0?'neg':s===0?'zero':(p.min&&s<=p.min?'low':'ok')}
+function dash(){const st={ok:0,low:0,zero:0,neg:0};
+const wall=D.p.map(p=>{const k=status(p);st[k]++;return `<button class="br ${k}" data-p="${esc(p.pid)}">${stock(p.pid)}<small>${esc(p.name)}</small></button>`}).join('');
+const last=D.t.reduce((m,x)=>x.date>m?x.date:m,'');const end=last?new Date(last+'T12:00:00'):new Date();const days=[];for(let i=13;i>=0;i--)days.push(ld(new Date(end.getTime()-i*864e5)));
+const I={},O={};let ti=0,to=0;const sold={};for(const x of D.t){if(x.type==='out')sold[x.pid]=(sold[x.pid]||0)+x.qty;if(x.date>=days[0]&&x.date<=days[13]){if(x.type==='in'){I[x.date]=(I[x.date]||0)+x.qty;ti+=x.qty}else{O[x.date]=(O[x.date]||0)+x.qty;to+=x.qty}}}
+const mx=Math.max(1,...days.map(d=>Math.max(I[d]||0,O[d]||0)));
+const bars=days.map((d,i)=>{const x=i*20+2,a=(I[d]||0)/mx*68,b=(O[d]||0)/mx*68;return `<rect x="${x}" y="${74-a}" width="8" height="${a}" rx="1.5" fill="var(--ok)"/><rect x="${x+9}" y="${74-b}" width="8" height="${b}" rx="1.5" fill="var(--wn)"/>`}).join('');
+const nm={};D.p.forEach(p=>nm[p.pid]=p.name);const top=Object.entries(sold).sort((a,b)=>b[1]-a[1]).slice(0,5),tmx=top.length?top[0][1]:1;
+const need=D.p.filter(p=>status(p)!=='ok').sort((a,b)=>stock(a.pid)-stock(b.pid)).slice(0,6);
+$('dash').innerHTML=cal()+`<div class="card"><h3>Your yard at a glance</h3><p>Each brick is a product with its stock. Tap one to update it.</p><div class="wall">${wall||'<div class="empty">Add your first product.</div>'}</div>
+<div class="lg"><span><i style="background:var(--ok)"></i>In stock ${st.ok}</span><span><i style="background:var(--wn)"></i>Low ${st.low}</span><span><i style="background:var(--ln)"></i>Empty ${st.zero}</span><span><i style="background:var(--ac)"></i>Below zero ${st.neg}</span></div></div>
+<div class="card"><h3>Stock moving in and out</h3><p>14 days to ${esc(days[13])}: <b class="in">+${ti} in</b>, <b class="out">−${to} out</b></p><svg viewBox="0 0 280 92" width="100%" role="img" aria-label="Daily stock in and out">${bars}<line x1="0" x2="280" y1="74.5" y2="74.5" stroke="var(--ln)"/><text x="2" y="87" font-size="9" fill="var(--mu)">${esc(days[0].slice(5))}</text><text x="278" y="87" font-size="9" text-anchor="end" fill="var(--mu)">${esc(days[13].slice(5))}</text></svg></div>
+<div class="card"><h3>Best sellers (all time)</h3>${top.length?top.map(([k,v])=>`<div class="tp"><span>${esc(nm[k]||k)}</span><div style="width:${Math.max(4,v/tmx*45)}%"></div><b>${v}</b></div>`).join(''):'<p>Nothing sold yet.</p>'}</div>
+<div class="card"><h3>Needs attention</h3>${need.length?need.map(p=>{const s=stock(p.pid);return `<div class="row ${status(p)}" data-p="${esc(p.pid)}"><div class="n"><b>${esc(p.name)}</b><small>${s<0?'Below zero: set the real count':s===0?'Empty':'Low'}</small></div><div class="q ${s<0?'neg':''}">${s}</div></div>`}).join(''):'<p>Everything is in stock.</p>'}</div>`}
+let CM=new Date();CM.setDate(1);
+function cal(){const y=CM.getFullYear(),m=CM.getMonth(),first=new Date(y,m,1).getDay(),n=new Date(y,m+1,0).getDate(),td=today();let c='';for(let i=0;i<first;i++)c+='<span></span>';
+for(let d=1;d<=n;d++){const k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),t=DT[k];c+=`<button class="cd${k===td?' td':''}${t?' has':''}" data-d="${k}"><b>${d}</b>${t?`<i class="in">+${t.i}</i><i class="out">−${t.o}</i>`:''}</button>`}
+return `<div class="card"><div class="ch"><button id="cp" aria-label="Previous month">‹</button><h3>${CM.toLocaleString('en-IN',{month:'long',year:'numeric'})}</h3><button id="cn" aria-label="Next month">›</button></div><div class="cg"><em>Sun</em><em>Mon</em><em>Tue</em><em>Wed</em><em>Thu</em><em>Fri</em><em>Sat</em>${c}</div><p style="margin:8px 0 0;font-size:13px;color:var(--mu)">Tap a date to see that day’s stock in and stock out.</p></div>`}
+function tip(k){const t=DT[k]||{i:0,o:0},nm={};D.p.forEach(p=>nm[p.pid]=p.name);const L=D.t.filter(x=>x.date===k).map(x=>`<div class="tx"><span>${esc(nm[x.pid]||x.pid)}${x.party?'<br><small>Party: '+esc(x.party)+'</small>':''}${x.note?'<br><small>'+esc(x.note)+'</small>':''}</span><span class="${x.type}">${x.type==='in'?'+':'−'}${x.qty}</span></div>`).join('');
+open_(`<h2 style="margin:0">${esc(k)}</h2><div class="g" style="margin:10px 0"><div class="card" style="margin:0"><p>Stock in</p><b class="in" style="font-size:26px">${t.i}</b></div><div class="card" style="margin:0"><p>Stock out</p><b class="out" style="font-size:26px">${t.o}</b></div></div>${L||'<div class="empty">No stock moved on this day.</div>'}<button class="p" id="cl" style="width:100%;margin-top:14px">Close</button>`);$('cl').onclick=close_}
+let PM=today().slice(0,7),PD='',PP='';
+function partyView(){const nm={};D.p.forEach(p=>nm[p.pid]=p.name);const pn=x=>(x.party||'').trim()||'No party';
+const O=D.t.filter(x=>x.type==='out'),E=O.filter(x=>PD?x.date===PD:x.date.slice(0,7)===PM),names=[...new Set(O.map(pn))].sort(),F=PP?E.filter(x=>pn(x)===PP):E,g={};
+for(const x of F){const k=pn(x);(g[k]||(g[k]={q:0,L:[]})).q+=x.qty;g[k].L.push(x)}const keys=Object.keys(g).sort((a,b)=>g[b].q-g[a].q),tot=F.reduce((a,x)=>a+x.qty,0);
+return `<div class="card"><h3>Stock out by party</h3><div class="g"><div><label>Month</label><input type="month" id="pm" value="${PM}"></div><div><label>Single day (optional)</label><input type="date" id="pd" value="${PD}"></div></div><label>Party</label><select id="pp"><option value="">All parties</option>${names.map(n=>`<option${n===PP?' selected':''}>${esc(n)}</option>`).join('')}</select><p style="margin:10px 0 0">${esc(PD||PM)}: <b class="out">−${tot}</b> to ${keys.length} part${keys.length===1?'y':'ies'}</p></div>`+
+(keys.length?keys.map(k=>`<div class="card"><div style="display:flex;justify-content:space-between;font-size:17px"><b>${esc(k)}</b><b class="out">−${g[k].q}</b></div>${g[k].L.sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<div class="tx"><span>${esc(x.date)} · ${esc(nm[x.pid]||x.pid)}</span><span class="out">−${x.qty}</span></div>`).join('')}</div>`).join(''):'<div class="empty">No stock out found for this period.</div>')}
+function render(){const q=$('q').value.toLowerCase(),fl=$('fl').value;let low=0,val=0;
+D.p.forEach(p=>{const s=stock(p.pid);if(s<=0||(p.min&&s<=p.min))low++;val+=Math.max(s,0)*p.buy});
+$('s1').textContent=D.p.length;$('s2').textContent=low;$('s3').textContent=Math.round(val).toLocaleString('en-IN');
+const d=D.bk?Math.floor((Date.now()-D.bk)/864e5):null;$('bk').style.color=(d===null||d>=7)?'var(--wn)':'';$('bk').textContent=d===null?'No backup yet. Your data lives only in this browser, so tap Back up to save a file.':(d===0?'Backed up today.':'Last backup '+d+' day'+(d>1?'s':'')+' ago.');
+const L=$('list');L.className=TAB==='s'?'gr':'';$('bar').style.display=(TAB==='d'||TAB==='p')?'none':'';$('fl').style.display=TAB==='s'?'':'none';$('dash').style.display=TAB==='d'?'':'none';
+if(TAB==='d'){L.innerHTML='';dash()}
+else if(TAB==='s'){const items=D.p.filter(p=>(p.name+p.pid+p.note).toLowerCase().includes(q)).filter(p=>!fl||status(p)!=='ok');
+L.innerHTML=items.length?items.map(p=>{const s=stock(p.pid),c=status(p);return `<div class="row ${c==='ok'?'':c}" data-p="${esc(p.pid)}"><div class="n"><b>${esc(p.name)}</b><small>${esc(p.pid)}${p.note?' · '+esc(p.note):''}</small></div><div class="q ${c==='neg'?'neg':''}">${s}<small>₹${p.buy}</small></div></div>`}).join(''):'<div class="empty">No products match. Tap “+ Add new item” or import a CSV.</div>'}
+else if(TAB==='p'){L.innerHTML=partyView()}
+else{const nm={};D.p.forEach(p=>nm[p.pid]=p.name);const items=[...D.t].sort((a,b)=>b.date.localeCompare(a.date)).filter(x=>((nm[x.pid]||'')+x.pid+x.note+(x.party||'')).toLowerCase().includes(q)).slice(0,300);
+L.innerHTML=items.length?items.map(x=>`<div class="tx"><span>${esc(x.date)}<br><b>${esc(nm[x.pid]||x.pid)}</b>${x.party?'<br><small>Party: '+esc(x.party)+'</small>':''}${x.note?'<br><small>'+esc(x.note)+'</small>':''}</span><span class="${x.type}">${x.type==='in'?'+':'−'}${x.qty}</span></div>`).join(''):'<div class="empty">No stock movements yet. Open a product and add stock in or out.</div>'}}
+function open_(h){$('sh').innerHTML=h;$('m').classList.add('on')}function close_(){$('m').classList.remove('on')}
+$('m').onclick=e=>{if(e.target===$('m'))close_()};
+function prod(pid){const p=D.p.find(x=>x.pid===pid);const s=stock(pid);
+open_(`<h2 style="margin:0">${esc(p.name)}</h2><p class="sub">${esc(p.pid)} · In stock: <b>${s}</b>${p.note?'<br>Note: '+esc(p.note):''}</p>
+<div class="g"><div><label>Quantity</label><input id="mq" type="number" inputmode="numeric" min="0"></div><div><label>Date</label><input id="md" type="date" value="${today()}"></div></div><label>Party name (for stock out)</label><input id="mpt" list="pl" placeholder="Who is taking the stock?" autocomplete="off"><datalist id="pl">${[...new Set(D.t.map(x=>x.party).filter(Boolean))].sort().map(n=>`<option value="${esc(n)}">`).join('')}</datalist><label>Note (optional)</label><input id="mn">
+<div class="g" style="margin-top:12px"><button class="p" id="mi">Stock in</button><button id="mo">Stock out</button></div>
+<div class="g3" style="margin-top:8px"><button id="mk">Set count</button><button id="me">Edit</button><button id="mc">Close</button></div><button id="mdl" style="margin-top:8px;width:100%;color:var(--wn)">Delete item</button>`);
+const mv=ty=>{const q=num($('mq').value);if(q<=0){toast('Enter a quantity');return}if(ty==='out'&&q>s&&!confirm('Only '+s+' in stock. Record anyway?'))return;
+const pt=$('mpt').value.trim();if(ty==='out'&&!pt&&!confirm('No party name entered. Save this stock out without a party?'))return;
+D.t.push({id:Date.now(),date:$('md').value||today(),pid,type:ty,qty:q,note:$('mn').value,party:ty==='out'?pt:''});save();close_();render();toast(ty==='in'?'Stock in saved':'Stock out saved')};
+$('mi').onclick=()=>mv('in');$('mo').onclick=()=>mv('out');$('mc').onclick=close_;$('me').onclick=()=>edit(pid);$('mdl').onclick=()=>confirmDel(pid);$('mk').onclick=()=>{const v=prompt('Real count in stock right now?',s);if(v===null||v.trim()==='')return;const n=num(v),df=n-s;if(df===0){close_();return}D.t.push({id:Date.now(),date:today(),pid,type:df>0?'in':'out',qty:Math.abs(df),note:'Stock count set to '+n});save();close_();render();toast('Count set to '+n)}}
+function confirmDel(pid){const p=D.p.find(x=>x.pid===pid),n=D.t.filter(x=>x.pid===pid).length;
+open_(`<h2 style="margin:0">Delete this item?</h2><p class="sub" style="margin-top:8px"><b>${esc(p.name)}</b> will be removed${n?' together with its '+n+' stock entries':''}. This cannot be undone.</p><div class="g"><button id="dn">Cancel</button><button class="p" id="dy" style="background:var(--wn);border-color:var(--wn)">Yes, delete</button></div>`);
+$('dn').onclick=()=>prod(pid);$('dy').onclick=()=>{D.p=D.p.filter(x=>x.pid!==pid);D.t=D.t.filter(x=>x.pid!==pid);save();close_();render();toast('Item deleted')}}
+function edit(pid){const p=pid?D.p.find(x=>x.pid===pid):{pid:'',name:'',note:'',buy:0,sell:0,min:0};
+open_(`<h2 style="margin:0">${pid?'Edit item':'Add new item'}</h2><label>Code</label><input id="ep" value="${esc(p.pid)}"><label>Name</label><input id="en" value="${esc(p.name)}"><label>Note</label><input id="eo" value="${esc(p.note)}">
+<div class="g3"><div><label>Buy rate</label><input id="eb" type="number" value="${p.buy}"></div><div><label>Sell rate</label><input id="es" type="number" value="${p.sell}"></div><div><label>Low at</label><input id="el" type="number" value="${p.min}"></div></div>
+<div class="g" style="margin-top:14px"><button class="p" id="sv">Save item</button><button id="cx">Cancel</button></div>${pid?'<button id="dl" style="margin-top:8px;width:100%;color:var(--wn)">Delete product</button>':''}`);
+$('cx').onclick=close_;$('sv').onclick=()=>{const np=$('ep').value.trim(),nn=$('en').value.trim();if(!np||!nn){toast('Code and name are required');return}
+if(np!==pid&&D.p.some(x=>x.pid===np)){toast('That code already exists');return}
+const o={pid:np,name:nn,note:$('eo').value,buy:num($('eb').value),sell:num($('es').value),min:num($('el').value)};
+if(pid){D.t.forEach(x=>{if(x.pid===pid)x.pid=np});D.p[D.p.findIndex(x=>x.pid===pid)]=o}else D.p.push(o);save();close_();render();toast('Product saved')};
+if(pid)$('dl').onclick=()=>confirmDel(pid)}
+function dl(name,txt,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast('File ready — check your Downloads')}
+const cq=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+let mode='';
+$('list').onchange=e=>{const i=e.target.id;if(i==='pm'){PM=e.target.value||PM;PD=''}else if(i==='pd'){PD=e.target.value;if(PD)PM=PD.slice(0,7)}else if(i==='pp')PP=e.target.value;else return;render()};
+$('list').onclick=$('dash').onclick=e=>{const c=e.target.closest('[data-d]');if(c){tip(c.dataset.d);return}if(e.target.closest('#cp')){CM.setMonth(CM.getMonth()-1);render();return}if(e.target.closest('#cn')){CM.setMonth(CM.getMonth()+1);render();return}const r=e.target.closest('[data-p]');if(r)prod(r.dataset.p)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close_()});
+$('add').onclick=()=>edit(null);$('q').oninput=()=>{clearTimeout(tm);tm=setTimeout(render,120)};$('fl').onchange=render;
+$('td').onclick=()=>setTab('d');$('ts').onclick=()=>setTab('s');$('th').onclick=()=>setTab('h');$('tp').onclick=()=>setTab('p');
+$('bImp').onclick=()=>{mode='imp';$('fi').accept='.csv,text/csv,text/plain';$('fi').click()};
+$('bRs').onclick=()=>{mode='rs';$('fi').accept='.json,application/json';$('fi').click()};
+$('bExp').onclick=()=>dl('products-'+today()+'.csv','\ufeffCode,Name,Note,Buy rate,Sell rate,Low at,In stock\n'+D.p.map(p=>[p.pid,p.name,p.note,p.buy,p.sell,p.min,stock(p.pid)].map(cq).join(',')).join('\n'),'text/csv');
+$('bTx').onclick=()=>dl('history-'+today()+'.csv','\ufeffDate,Code,Type,Quantity,Note,Party\n'+D.t.map(x=>[x.date,x.pid,x.type,x.qty,x.note,x.party].map(cq).join(',')).join('\n'),'text/csv');
+$('bBk').onclick=()=>{D.bk=Date.now();save();dl('stockbook-backup-'+today()+'.json',JSON.stringify(D),'application/json');render()};
+$('fi').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>{const t=r.result;
+if(mode==='rs'){try{const o=JSON.parse(t);if(!Array.isArray(o.p)||!Array.isArray(o.t))throw 0;if(!confirm('Replace current data with this backup?'))return;D=o;save();render();toast('Backup restored')}catch(x){toast('That is not a Stock Book backup file')}return}
+const h=t.split(/\r?\n/)[0].toLowerCase();
+if(h.includes('name')&&(h.includes('buy')||h.includes('pid'))&&!h.includes('qty')&&!h.includes('quantity')){let a=0,u=0;for(const p of parseProducts(t)){const i=D.p.findIndex(x=>x.pid===p.pid);if(i<0){D.p.push(p);a++}else{D.p[i]={...D.p[i],name:p.name,note:p.note,buy:p.buy};u++}}save();render();toast(a+' added, '+u+' updated')}
+else{const n=importTx(t);if(n<0)toast('Could not find product code and quantity columns');else{save();render();toast(n+' stock entries imported'+(SKIP?', '+SKIP+' skipped (unknown product)':''))}}};r.readAsText(f)};
+let DB=null,LAST={},RM={},ready=0,busy=0,wq=0,wc=0;
+const canon=v=>JSON.stringify(v,(k,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.keys(x).sort().reduce((a,b)=>(a[b]=x[b],a),{}):x);
+function sy(t){$('sy').textContent=t}
+function docsOf(){const g={},o={'stock/main':{p:D.p,bk:D.bk||0}};for(const x of D.t){const k=(x.date||'0000-00').slice(0,7);(g[k]||(g[k]=[])).push(x)}for(const k in g)o['tx/'+k]={list:g[k]};return o}
+async function run(){if(!DB||!ready)return;if(busy){wq=setTimeout(run,500);return}busy=1;wc++;try{const o=docsOf();for(const k in LAST)if(k.startsWith('tx/')&&!o[k])o[k]={list:[]};
+for(const k in o){const j=canon(o[k]);if(LAST[k]===j)continue;await DB.doc(k).set(JSON.parse(j));LAST[k]=j}sy('Saved to your database.')}catch(e){sy('Cloud save failed. Your data is still saved on this device.')}busy=0}
+function adopt(){const m=RM['stock/main'];if(!m)return;const o=JSON.parse(m),t=[];for(const k in RM)if(k.startsWith('tx/')&&RM[k])t.push(...(JSON.parse(RM[k]).list||[]));
+D={p:o.p||[],t,bk:o.bk||D.bk||null,seeded:1};for(const k in RM)LAST[k]=RM[k];calc();try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}render()}
+function chk(){if(!ready||busy)return;for(const k in RM)if(RM[k]!==(LAST[k]||null)){adopt();return}}
+let PIN='';try{PIN=localStorage.getItem('sb-pin')||''}catch(e){}
+async function api(m,b){const r=await fetch('/api/data',{method:m,headers:{'content-type':'application/json','x-pin':PIN},body:b?JSON.stringify(b):undefined});if(r.status===401)throw new Error('401');if(!r.ok)throw new Error('http');return r.json()}
+async function connectApi(off){try{let g;for(let i=0;i<3&&!g;i++){try{g=await api('GET')}catch(e){if(e.message!=='401')throw e;const p=prompt(i?'Wrong PIN. Enter your app PIN again:':'Enter your app PIN to open your MongoDB database:');if(p===null){sy('Locked. Reload the page and enter the PIN to sync.');return}PIN=p;try{localStorage.setItem('sb-pin',p)}catch(x){}}}
+if(!g){sy('Wrong PIN. Reload the page to try again.');return}
+for(const k in g.docs)RM[k]=canon(g.docs[k]);
+DB={doc:k=>({set:d=>api('POST',{docs:{[k]:d}})})};ready=1;
+if(RM['stock/main']){adopt();sy('Loaded from your MongoDB database.')}else run();
+setInterval(async()=>{if(busy||document.hidden||!DB)return;const w=wc;try{const r=await api('GET');if(w!==wc||busy)return;for(const k in r.docs)RM[k]=canon(r.docs[k]);chk()}catch(e){}},30000)}
+catch(e){sy('MongoDB not reachable. '+off)}}
+async function connect(){const off='Saved on this device only. Use Back up to keep a safe copy.';try{if(!window.claude||!window.claude.use){return connectApi(off)}const db=await window.claude.use('db');if(!db){return connectApi(off)}DB=db;sy('Connecting to your cloud database…');let f1=0,f2=0;
+const tick=()=>{if(f1&&f2&&!ready){ready=1;if(RM['stock/main']){adopt();sy('Loaded from your cloud database.')}else run()}};
+const er=()=>sy('Cloud database unavailable. '+off);
+DB.doc('stock/main').onSnapshot(s=>{RM['stock/main']=s.exists?canon(s.data()):null;if(!f1){f1=1;tick()}else chk()},er);
+DB.collection('tx').onSnapshot(q=>{q.docs.forEach(d=>RM['tx/'+d.id]=canon(d.data()));if(!f2){f2=1;tick()}else chk()},er)}catch(e){sy(off)}}
+function start(){if(!D.p.length)D.p=parseProducts(SEED);if(!D.seeded){if(TXSEED)importTx(TXSEED);D.seeded=1}save();setTab('d')}
+load();if(D.p.length)start();else{let done=0;const go=()=>{if(!done){done=1;start()}};setTimeout(go,1500);idb(db=>{try{const g=db.transaction('s').objectStore('s').get('d');g.onsuccess=()=>{try{if(g.result&&!done)D=JSON.parse(g.result)}catch(e){}go()};g.onerror=go}catch(e){go()}})}
+connect();try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+</script></body></html>
