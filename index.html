@@ -1374,65 +1374,49 @@
           sy("Database not reachable. " + off);
         }
       }
-    //   async function connect() {
-    //     const off =
-    //       "Saved on this device only. Use Back up to keep a safe copy.";
-    //     try {
-    //       if (!window.claude || !window.claude.use) {
-    //         return connectApi(off);
-    //       }
-    //       const db = await window.claude.use("db");
-    //       if (!db) {
-    //         return connectApi(off);
-    //       }
-    //       DB = db;
-    //       sy("Connecting to your cloud database…");
-    //       let f1 = 0,
-    //         f2 = 0;
-    //       const tick = () => {
-    //         if (f1 && f2 && !ready) {
-    //           ready = 1;
-    //           if (RM["stock/main"]) {
-    //             adopt();
-    //             sy("Loaded from your cloud database.");
-    //           } else run();
-    //         }
-    //       };
-    //       const er = () => sy("Cloud database unavailable. " + off);
-    //       DB.doc("stock/main").onSnapshot((s) => {
-    //         RM["stock/main"] = s.exists ? canon(s.data()) : null;
-    //         if (!f1) {
-    //           f1 = 1;
-    //           tick();
-    //         } else chk();
-    //       }, er);
-    //       DB.collection("tx").onSnapshot((q) => {
-    //         q.docs.forEach((d) => (RM["tx/" + d.id] = canon(d.data())));
-    //         if (!f2) {
-    //           f2 = 1;
-    //           tick();
-    //         } else chk();
-    //       }, er);
-    //     } catch (e) {
-    //       sy(off);
-    //     }
-    //   }
-
-    
-async function connect() {
-  const off = "Cloud database unavailable. Check your Vercel settings.";
-
-  sy("Connecting to Neon database...");
-
-  try {
-    // Always use your Vercel API connected to Neon PostgreSQL
-    await connectApi(off);
-  } catch (e) {
-    console.error("Neon connection error:", e);
-    sy("Neon connection failed. Check your Vercel settings.");
-  }
-}
-
+      async function connect() {
+        const off =
+          "Saved on this device only. Use Back up to keep a safe copy.";
+        try {
+          if (!window.claude || !window.claude.use) {
+            return connectApi(off);
+          }
+          const db = await window.claude.use("db");
+          if (!db) {
+            return connectApi(off);
+          }
+          DB = db;
+          sy("Connecting to your cloud database…");
+          let f1 = 0,
+            f2 = 0;
+          const tick = () => {
+            if (f1 && f2 && !ready) {
+              ready = 1;
+              if (RM["stock/main"]) {
+                adopt();
+                sy("Loaded from your cloud database.");
+              } else run();
+            }
+          };
+          const er = () => sy("Cloud database unavailable. " + off);
+          DB.doc("stock/main").onSnapshot((s) => {
+            RM["stock/main"] = s.exists ? canon(s.data()) : null;
+            if (!f1) {
+              f1 = 1;
+              tick();
+            } else chk();
+          }, er);
+          DB.collection("tx").onSnapshot((q) => {
+            q.docs.forEach((d) => (RM["tx/" + d.id] = canon(d.data())));
+            if (!f2) {
+              f2 = 1;
+              tick();
+            } else chk();
+          }, er);
+        } catch (e) {
+          sy(off);
+        }
+      }
       function start() {
         if (!D.p.length) D.p = parseProducts(SEED);
         if (!D.seeded) {
