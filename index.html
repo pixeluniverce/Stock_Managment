@@ -179,13 +179,13 @@ D={p:o.p||[],t,bk:o.bk||D.bk||null,seeded:1};for(const k in RM)LAST[k]=RM[k];cal
 function chk(){if(!ready||busy)return;for(const k in RM)if(RM[k]!==(LAST[k]||null)){adopt();return}}
 let PIN='';try{PIN=localStorage.getItem('sb-pin')||''}catch(e){}
 async function api(m,b){const r=await fetch('/api/data',{method:m,headers:{'content-type':'application/json','x-pin':PIN},body:b?JSON.stringify(b):undefined});if(r.status===401)throw new Error('401');if(!r.ok)throw new Error('http');return r.json()}
-async function connectApi(off){try{let g;for(let i=0;i<3&&!g;i++){try{g=await api('GET')}catch(e){if(e.message!=='401')throw e;const p=prompt(i?'Wrong PIN. Enter your app PIN again:':'Enter your app PIN to open your MongoDB database:');if(p===null){sy('Locked. Reload the page and enter the PIN to sync.');return}PIN=p;try{localStorage.setItem('sb-pin',p)}catch(x){}}}
+async function connectApi(off){try{let g;for(let i=0;i<3&&!g;i++){try{g=await api('GET')}catch(e){if(e.message!=='401')throw e;const p=prompt(i?'Wrong PIN. Enter your app PIN again:':'Enter your app PIN to open your database:');if(p===null){sy('Locked. Reload the page and enter the PIN to sync.');return}PIN=p;try{localStorage.setItem('sb-pin',p)}catch(x){}}}
 if(!g){sy('Wrong PIN. Reload the page to try again.');return}
 for(const k in g.docs)RM[k]=canon(g.docs[k]);
 DB={doc:k=>({set:d=>api('POST',{docs:{[k]:d}})})};ready=1;
-if(RM['stock/main']){adopt();sy('Loaded from your MongoDB database.')}else run();
+if(RM['stock/main']){adopt();sy('Loaded from your database.')}else run();
 setInterval(async()=>{if(busy||document.hidden||!DB)return;const w=wc;try{const r=await api('GET');if(w!==wc||busy)return;for(const k in r.docs)RM[k]=canon(r.docs[k]);chk()}catch(e){}},30000)}
-catch(e){sy('MongoDB not reachable. '+off)}}
+catch(e){sy('Database not reachable. '+off)}}
 async function connect(){const off='Saved on this device only. Use Back up to keep a safe copy.';try{if(!window.claude||!window.claude.use){return connectApi(off)}const db=await window.claude.use('db');if(!db){return connectApi(off)}DB=db;sy('Connecting to your cloud database…');let f1=0,f2=0;
 const tick=()=>{if(f1&&f2&&!ready){ready=1;if(RM['stock/main']){adopt();sy('Loaded from your cloud database.')}else run()}};
 const er=()=>sy('Cloud database unavailable. '+off);

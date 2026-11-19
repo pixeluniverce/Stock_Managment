@@ -1,12 +1,20 @@
-const { MongoClient } = require('mongodb');
+const { neon } = require('@neondatabase/serverless');
 
-function collection() {
-  if (!global._stockClient) {
-    global._stockClient = new MongoClient(process.env.MONGODB_URI).connect();
+const sql = neon(process.env.DATABASE_URL || process.env.POSTGRES_URL);
+let ready = null;
+
+function init() {
+  if (!ready) {
+    ready = sql`CREATE TABLE IF NOT EXISTS docs (
+      id TEXT PRIMARY KEY,
+      data JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`.catch((e) => {
+      ready = null;
+      throw e;
+    });
   }
-  return global._stockClient.then((c) =>
-    c.db(process.env.MONGODB_DB || 'stockbook').collection('docs')
-  );
+  return ready;
 }
 
 module.exports = async (req, res) => {
@@ -16,27 +24,23 @@ module.exports = async (req, res) => {
     return res.status(401).json({ error: 'unauthorized' });
   }
   try {
-    const c = await collection();
+    await init();
     if (req.method === 'GET') {
-      const rows = await c.find({}).toArray();
+      const rows = await sql`SELECT id, data FROM docs`;
       const docs = {};
-      for (const r of rows) {
-        const { _id, ...rest } = r;
-        docs[_id] = rest;
-      }
+      for (const r of rows) docs[r.id] = r.data;
       return res.status(200).json({ docs });
     }
     if (req.method === 'POST') {
       const docs = (req.body && req.body.docs) || {};
-      const ops = Object.entries(docs).map(([id, data]) => ({
-        replaceOne: { filter: { _id: id }, replacement: data, upsert: true },
-      }));
-      if (ops.length) await c.bulkWrite(ops);
+      for (const [id, data] of Object.entries(docs)) {
+        await sql`INSERT INTO docs (id, data) VALUES (${id}, ${JSON.stringify(data)}::jsonb)
+          ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`;
+      }
       return res.status(200).json({ ok: true });
     }
     return res.status(405).json({ error: 'method not allowed' });
   } catch (e) {
-    global._stockClient = null;
     return res.status(500).json({ error: 'server error' });
   }
 };
